@@ -1,4 +1,3 @@
-
 name: Build Debug APK
 
 on:
@@ -9,18 +8,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./CokeWidgetApp   # <<< ВАЖНО: строим внутри подпапки
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show tree
+      - name: Find project directory (has settings.gradle or settings.gradle.kts)
+        id: finddir
         run: |
-          pwd
-          ls -la
-          cat settings.gradle.kts || true
+          set -e
+          # ищем settings.gradle(.kts) в репо
+          FILE=$(git ls-files | grep -E '^.*settings\.gradle(\.kts)?$' | head -n1 || true)
+          if [ -z "$FILE" ]; then
+            echo "❌ Не нашли settings.gradle(.kts). Проверь структуру репозитория."
+            exit 1
+          fi
+          DIR=$(dirname "$FILE")
+          echo "PROJECT_DIR=$DIR" >> $GITHUB_OUTPUT
+          echo "✅ Нашли проект в: $DIR"
+          echo "Содержимое:"
+          ls -la "$DIR"
 
       - uses: actions/setup-java@v4
         with:
@@ -31,12 +36,18 @@ jobs:
         with:
           gradle-version: 8.7
 
+      - name: Show settings.gradle(.kts)
+        run: |
+          cat "${{ steps.finddir.outputs.PROJECT_DIR }}/settings.gradle.kts" || true
+          cat "${{ steps.finddir.outputs.PROJECT_DIR }}/settings.gradle" || true
+
       - name: Build Debug
-        run: gradle :app:assembleDebug
+        run: |
+          cd "${{ steps.finddir.outputs.PROJECT_DIR }}"
+          gradle :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
-          # путь указываем ОТ КОРНЯ РЕПО (а не от working-directory!)
-          path: CokeWidgetApp/app/build/outputs/apk/debug/*.apk
+          path: ${{ steps.finddir.outputs.PROJECT_DIR }}/app/build/outputs/apk/debug/*.apk
