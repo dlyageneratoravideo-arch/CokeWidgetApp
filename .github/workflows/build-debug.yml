@@ -1,4 +1,6 @@
+
 name: Build Debug APK
+
 on:
   push:
     branches: [ "main" ]
@@ -7,19 +9,34 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./CokeWidgetApp   # <<< ВАЖНО: строим внутри подпапки
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Show tree
+        run: |
+          pwd
+          ls -la
+          cat settings.gradle.kts || true
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
+
       - uses: gradle/gradle-build-action@v3
         with:
           gradle-version: 8.7
+
       - name: Build Debug
         run: gradle :app:assembleDebug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          # путь указываем ОТ КОРНЯ РЕПО (а не от working-directory!)
+          path: CokeWidgetApp/app/build/outputs/apk/debug/*.apk
