@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<preferences xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Остановочный ремонт (по установке)">
+        <SwitchPreferenceCompat
+            android:key="maintenance_21_10"
+            android:title="21-10 в ремонте"
+            android:defaultValue="false" />
+        <SwitchPreferenceCompat
+            android:key="maintenance_21_20"
+            android:title="21-20 в ремонте"
+            android:defaultValue="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Остановочный ремонт (по реакторам 21-10)">
+        <SwitchPreferenceCompat android:key="maintenance_R1" android:title="Р-1" android:defaultValue="false"/>
+        <SwitchPreferenceCompat android:key="maintenance_R2" android:title="Р-2" android:defaultValue="false"/>
+        <SwitchPreferenceCompat android:key="maintenance_R3" android:title="Р-3" android:defaultValue="false"/>
+        <SwitchPreferenceCompat android:key="maintenance_R4" android:title="Р-4" android:defaultValue="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Остановочный ремонт (по реакторам 21-20)">
+        <SwitchPreferenceCompat android:key="maintenance_DC101A" android:title="DC-101A" android:defaultValue="false"/>
+        <SwitchPreferenceCompat android:key="maintenance_DC101B" android:title="DC-101B" android:defaultValue="false"/>
+        <SwitchPreferenceCompat android:key="maintenance_DC101C" android:title="DC-101C" android:defaultValue="false"/>
+        <SwitchPreferenceCompat android:key="maintenance_DC101D" android:title="DC-101D" android:defaultValue="false"/>
+    </PreferenceCategory>
+</preferences>
