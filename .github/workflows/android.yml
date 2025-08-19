@@ -1,21 +1,39 @@
 name: Android CI
 on:
-  push: { branches: [ main, master, ci-fix ] }
+  push: { branches: [ main, master, ci-fix, import-from-zip ] }
   pull_request:
+
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions: { contents: write }
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: 17, cache: gradle }
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew || true
-      - name: Accept Android SDK licenses
-        run: yes | sudo /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-      - name: Build Debug APK (skip lint/tests)
-        run: ./gradlew :app:assembleDebug -x lint -x test --no-daemon
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      # Установим Android SDK и нужные пакеты заранее
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
+
+      # Запускаем Gradle БЕЗ wrapper'а (скачает Gradle 8.7)
+      - name: Build with Gradle 8.7 (no wrapper)
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 8.7
+          arguments: ":app:assembleDebug -x lint -x test --no-daemon"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
-        with: { name: app-debug-apk, path: app/build/outputs/apk/debug/*.apk }
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
