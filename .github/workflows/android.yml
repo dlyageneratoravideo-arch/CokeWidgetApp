@@ -7,6 +7,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions: { contents: write }
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
 
     steps:
       - uses: actions/checkout@v4
@@ -17,20 +20,24 @@ jobs:
           java-version: 17
           cache: gradle
 
-      # Установим Android SDK и нужные пакеты заранее
-      - uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platform-tools
-            platforms;android-34
-            build-tools;34.0.0
+      # Принимаем лицензии и ставим нужные компоненты SDK
+      - name: Accept SDK licenses
+        run: yes | sudo $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      # Запускаем Gradle БЕЗ wrapper'а (скачает Gradle 8.7)
+      - name: Install Android SDK packages
+        run: |
+          sudo mkdir -p $ANDROID_SDK_ROOT
+          yes | sudo $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
+      # Запускаем Gradle БЕЗ wrapper'а (gradle 8.7)
       - name: Build with Gradle 8.7 (no wrapper)
         uses: gradle/gradle-build-action@v3
         with:
           gradle-version: 8.7
-          arguments: ":app:assembleDebug -x lint -x test --no-daemon"
+          arguments: ":app:assembleDebug -x lint -x test --no-daemon --stacktrace"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
